@@ -1,20 +1,20 @@
 package com.backend.lms.model;
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 @Table(name = "users")
 @Entity
 public class Users implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
@@ -111,12 +111,13 @@ public class Users implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + this.getRole().name()));
+        // Corrected the method to use `this.getRole()`
+        return List.of(new SimpleGrantedAuthority(this.getRole().name()));
     }
 
     @Override
     public String getUsername() {
-        return email; // or phoneNo if needed
+        return email; // or phoneNo, depending on your logic
     }
 
     @Override

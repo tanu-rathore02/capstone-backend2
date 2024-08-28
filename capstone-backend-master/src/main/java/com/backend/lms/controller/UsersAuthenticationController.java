@@ -1,8 +1,8 @@
 package com.backend.lms.controller;
 
-import com.backend.lms.dto.LoginUserDto;
-import com.backend.lms.dto.RefreshTokenRequest;
-import com.backend.lms.dto.RegisterUserDto;
+import com.backend.lms.dto.inDto.LoginUserDto;
+import com.backend.lms.dto.outDto.RefreshTokenRequest;
+import com.backend.lms.dto.inDto.RegisterUserDto;
 import com.backend.lms.model.Role;
 import com.backend.lms.model.Users;
 import com.backend.lms.responses.JwtResponse;

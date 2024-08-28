@@ -1,4 +1,4 @@
-package com.backend.lms.dto;
+package com.backend.lms.dto.inDto;
 
 import com.backend.lms.model.Role;
 

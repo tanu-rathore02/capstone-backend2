@@ -1,4 +1,4 @@
-package com.backend.lms.dto;
+package com.backend.lms.dto.inDto;
 
 public class LoginUserDto {
     private String username; // This will be email for admin, phoneNo for user

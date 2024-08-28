@@ -1,4 +1,4 @@
-package com.backend.lms.dto;
+package com.backend.lms.dto.outDto;
 
 public class RefreshTokenRequest {
     private String refreshToken;
