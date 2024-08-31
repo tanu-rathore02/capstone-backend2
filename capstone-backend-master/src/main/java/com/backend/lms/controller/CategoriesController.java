@@ -1,70 +1,86 @@
 package com.backend.lms.controller;
 
-import com.backend.lms.dto.CategoriesDto;
-import com.backend.lms.model.Categories;
-import com.backend.lms.service.CategoriesService;
+import com.backend.lms.dto.categories.CategoriesDto;
+import com.backend.lms.service.ICategoriesService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api")
+@RequestMapping(path="/api/categories", produces = {MediaType.APPLICATION_JSON_VALUE})
 public class CategoriesController {
 
-    @Autowired
-    private CategoriesService categoriesService;
+    private final ICategoriesService iCategoriesService;
 
-    // Get all categories
     @GetMapping("/allCategories")
-    public ResponseEntity<List<Categories>> getAllCategories() {
-        List<Categories> list = categoriesService.getAllCategories();
-        if (list.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        return ResponseEntity.ok(list);
+    public ResponseEntity<?> getCategories(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = false) String search) {
+
+        if (page == null || size == null) {
+            // Fetch all categories without pagination
+            List<CategoriesDto> categoryDtoList = iCategoriesService.getAllCategories(Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+            return ResponseEntity.ok(categoryDtoList);
+        } else {
+            Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortDir), sortBy);
+            Page<CategoriesDto> categoryDTOPage = iCategoriesService.getCategoriesPaginated(pageable, search);
+            return ResponseEntity.status(HttpStatus.OK).body(categoryDTOPage);
+        }
     }
 
-    // Get a category by id
-    @GetMapping("/getCategory/{id}")
-    public ResponseEntity<CategoriesDto> getCategoryById(@PathVariable int id) {
-        CategoriesDto categoryDto = categoriesService.getCategoryById(id);
-        if (categoryDto == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        return ResponseEntity.ok(categoryDto);
+    @GetMapping("/categoryCount")
+    public ResponseEntity<Long> getCategoryCount() {
+        Long categoryCount = iCategoriesService.getCategoriesCount();
+        return ResponseEntity.status(HttpStatus.OK).body(categoryCount);
     }
 
-    // Create a new category
+    @GetMapping("/category/{id}")
+    public ResponseEntity<CategoriesDto> getCategory(@PathVariable Long id) {
+        CategoriesDto categoriesDto = iCategoriesService.getCategoryById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(categoriesDto);
+    }
+
+    @GetMapping("/category/name/{name}")
+    public ResponseEntity<CategoriesDto> getCategoryByName(@PathVariable String name) {
+        CategoriesDto categoriesDto = iCategoriesService.getCategoryByName(name);
+        return ResponseEntity.status(HttpStatus.OK).body(categoriesDto);
+    }
+
     @PostMapping("/createCategory")
-    public ResponseEntity<CategoriesDto> createCategory(@RequestBody CategoriesDto categoryDto) {
-        try {
-            CategoriesDto createdCategory = categoriesService.createCategory(categoryDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<CategoriesDto> createCategory(@RequestBody CategoriesDto categoryDTO) {
+        CategoriesDto savedCategoryDTO = iCategoriesService.createCategory(categoryDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedCategoryDTO);
     }
 
-    // Update a category
     @PutMapping("/updateCategory/{id}")
-    public ResponseEntity<CategoriesDto> updateCategory(@PathVariable int id, @RequestBody CategoriesDto categoryDto) {
-        try {
-            CategoriesDto updatedCategory = categoriesService.updateCategory(id, categoryDto);
-            return ResponseEntity.ok().body(updatedCategory);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<CategoriesDto> updateCategory(@PathVariable Long id, @RequestBody CategoriesDto categoryDTO) {
+        CategoriesDto updatedCategoryDTO = iCategoriesService.updateCategory(id, categoryDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedCategoryDTO);
     }
 
-    // Delete a category
+
     @DeleteMapping("/deleteCategory/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable int id) {
-        try {
-            categoriesService.deleteCategory(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<CategoriesDto> deleteCategory(@PathVariable Long id) {
+        CategoriesDto categoryDTO = iCategoriesService.deleteCategoryById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(categoryDTO);
+    }
+
+    @DeleteMapping("/deleteCategory/name/{name}")
+    public ResponseEntity<CategoriesDto> deleteCategoryByName(@PathVariable String name) {
+        CategoriesDto categoryDTO = iCategoriesService.deleteCategoryByName(name);
+        return ResponseEntity.status(HttpStatus.OK).body(categoryDTO);
     }
 }

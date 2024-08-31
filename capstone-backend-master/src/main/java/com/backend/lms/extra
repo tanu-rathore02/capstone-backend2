@@ -1,0 +1,15 @@
+@Data
+public class UserDto {
+    private Long id;
+    private String name;
+    private String mobileNumber;
+    // Other fields...
+}
+
+@Data
+public class BookOutDto {
+    private Long id;
+    private String title;
+    private int availability;
+    // Other fields...
+}
