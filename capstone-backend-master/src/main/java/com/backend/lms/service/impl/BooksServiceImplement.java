@@ -57,10 +57,7 @@ public class BooksServiceImplement implements IBooksService {
         return booksRepository.count();
     }
 
-//    @Override
-//    public Long getTotalBooksCount() {
-//        return booksRepository.getTotalBooksCount();
-//    }
+
 
     @Override
     public List<BooksOutDto> getBooksByAuthor(String author) {
@@ -167,4 +164,6 @@ public class BooksServiceImplement implements IBooksService {
         return booksOutDto;
 
     }
+
+
 }

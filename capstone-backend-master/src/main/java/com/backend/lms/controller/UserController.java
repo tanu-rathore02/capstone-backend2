@@ -1,5 +1,6 @@
 package com.backend.lms.controller;
 
+import com.backend.lms.dto.categories.CategoriesDto;
 import com.backend.lms.dto.users.RegisterRequestDto;
 import com.backend.lms.dto.users.UserDto;
 import com.backend.lms.service.IUserService;
@@ -22,27 +23,35 @@ public class UserController {
 
     private final IUserService iUserService;
 
+
     @GetMapping("/users")
     public ResponseEntity<?> getAllUser(
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(required = false) String search) {
-        if (page == null || size == null) {
-            List<UserDto> userDtoList = iUserService.getAllUsers(Sort.by(sortBy));
-            return ResponseEntity.status(HttpStatus.OK).body(userDtoList);
-        } else {
-            Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortDir), sortBy);
-            Page<UserDto> userDtoPage = iUserService.getUsers(pageable, search);
-            return ResponseEntity.status(HttpStatus.OK).body(userDtoPage);
+
+        if (page < 0) {
+            page = 0;
         }
+        if (size <= 0) {
+            size = 10;
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortDir), sortBy);
+        Page<UserDto> userDtoPage = iUserService.getUsers(pageable, search);
+        return ResponseEntity.status(HttpStatus.OK).body(userDtoPage);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestBody RegisterRequestDto registerRequestDto) {
-        UserDto savedUser = iUserService.registerUser(registerRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+    @GetMapping("/allUsersForDropDown")
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        List<UserDto> users = iUserService.getAllUsers(sort);
+        return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
     @GetMapping("/user/{mobileNumber}")
@@ -57,6 +66,11 @@ public class UserController {
         return ResponseEntity.status(200).body(userCount);
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> registerUser(@RequestBody RegisterRequestDto registerRequestDto) {
+        UserDto savedUser = iUserService.registerUser(registerRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+    }
     @DeleteMapping("/user/{mobileNumber}")
     public ResponseEntity<UserDto> deleteUser(@PathVariable String mobileNumber) {
         UserDto userDto = iUserService.deleteUserByMobile(mobileNumber);

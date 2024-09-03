@@ -53,34 +53,37 @@ public class SecurityConfig {
                 }));
 
         http.authorizeHttpRequests((requests) -> requests
-//                Other routes
+//                Auth routes
                         .requestMatchers("/api/login", "/api/error").permitAll()
                         .requestMatchers("/api/register").hasRole("ADMIN")
                         .requestMatchers("/api/current-user").authenticated()
 
 //                Category routes
-                        .requestMatchers("/api/allCategories", "/api/getCategory/{id}", "/api/searchCategories").permitAll()
-                        .requestMatchers("/api/createCategory", "/api/updateCategory/{id}", "/api/deleteCategory/{id}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                        .requestMatchers("/api/categories/allCategories", "/api/categories/getCategory/{id}", "/api/categories/searchCategories").hasRole("ADMIN")
+                        .requestMatchers("/api/categories/createCategory", "/api/categories/updateCategory/{id}", "/api/categories/deleteCategory/{id}", "/api/categories/deleteCategory/name/{name}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
 
 //                Book routes
-                        .requestMatchers( "/api/allBooks","/api/getBooks/{id}").hasRole("ADMIN")
-                        .requestMatchers( "/api/createBooks", "/api/updateBooks/{id}").hasRole("ADMIN")
-                        .requestMatchers( "/api/deleteBooks/{id}").hasRole("ADMIN")
-
+                        .requestMatchers( "/api/books/allBooks","/api/books/getBook/{id}", "/api/books/allForDropDown").hasRole("ADMIN")
+                        .requestMatchers( "/api/books/createBook", "/api/books/updateBook/{id}").hasRole("ADMIN")
+                        .requestMatchers( "/api/books/deleteBook/{id}", "/api/books/title/{title}").hasRole("ADMIN")
+                        .requestMatchers("/api/books/categoryId/{categoryId}","api/books/author/{author}","api/books/title-count").hasRole("ADMIN")
+                        .requestMatchers( HttpMethod.GET, "/api/issuances/**").hasAnyRole("ADMIN", "USER")
 
 
 //                User routes
                         .requestMatchers( "/api/user/**").hasRole("ADMIN")
                         .requestMatchers( "/api/users").hasRole("ADMIN")
-                        .requestMatchers( "/api/user-count").hasRole("ADMIN")
+                        .requestMatchers( "/api/user-count", "/api/allUsersForDropDown").hasRole("ADMIN")
                         .requestMatchers( HttpMethod.GET, "/api/user/**").hasAnyRole("ADMIN", "USER")
 
 //                Issuance routes
-                        .requestMatchers("/api/allIssuances", "/getIssuance/{id}").hasRole("ADMIN")
-                        .requestMatchers("/api/issuances").authenticated()
-                        .requestMatchers("/api/createIssuance", "api/updateIssuance/{id}", "api/deleteIssuance?{id}").hasRole("ADMIN")
-                        .requestMatchers( HttpMethod.GET, "/api/issuance/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers("/api/issuances/allIssuances", "/api/issuances/issuance/{id}").hasRole("ADMIN")
+                        .requestMatchers("/api/issuance/issuances").authenticated()
+                        .requestMatchers("/api/issuances/user/{userId}","/api/issuances/book/{bookId}").hasRole("ADMIN")
+                        .requestMatchers("/api/issuances/createIssuance", "api/issuances/updateIssuance/{id}").hasRole("ADMIN")
+                        .requestMatchers("api/issuances/updateStatus/{id}", "api/issuances/deleteIssuance/{id}").hasRole("ADMIN")
+                        .requestMatchers( HttpMethod.GET, "/api/issuances/**").hasAnyRole("ADMIN", "USER")
 
 
 //                        .requestMatchers("/**").permitAll()

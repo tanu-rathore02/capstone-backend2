@@ -18,6 +18,11 @@ public interface IssuancesRepository extends JpaRepository<Issuances, Long> {
 
     Page<Issuances> findByBooks_TitleContainingIgnoreCase(String title, Pageable pageable);
 
+
+    List<Issuances> findByUsersId(Long userId);
+
+    List<Issuances> findByBooksId(Long bookId);
+
 //    @Query("SELECT i FROM Issuances i WHERE i.user.id = :id")
 //    List<Issuances> findAllByUserId(Long id);
 

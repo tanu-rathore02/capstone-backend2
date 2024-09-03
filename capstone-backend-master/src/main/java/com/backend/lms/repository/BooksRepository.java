@@ -23,6 +23,6 @@ public interface BooksRepository extends JpaRepository<Books, Long> {
 
     List<Books> findAllByAuthor(String author);
 
-//    @Query("SELECT SUM(b.availability) FROM Books b")
-//    Long getTotalBooksCount();
+    void deleteByCategories(Categories category);
+
 }

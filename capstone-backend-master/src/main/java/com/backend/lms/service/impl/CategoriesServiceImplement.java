@@ -5,8 +5,10 @@ import com.backend.lms.dto.categories.CategoriesDto;
 import com.backend.lms.exception.ResourceNotFoundException;
 import com.backend.lms.mapper.CategoriesMapper;
 import com.backend.lms.model.Categories;
+import com.backend.lms.repository.BooksRepository;
 import com.backend.lms.repository.CategoriesRepository;
 import com.backend.lms.service.ICategoriesService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CategoriesServiceImplement implements ICategoriesService {
     private  final CategoriesRepository categoriesRepository;
+    private final BooksRepository booksRepository;
 
 
    //get APIs
@@ -91,17 +94,37 @@ public class CategoriesServiceImplement implements ICategoriesService {
    }
 
    //Delete APIs
+//    @Override
+//    public CategoriesDto deleteCategoryById(Long id) {
+//        Categories category = categoriesRepository.findById(id).orElseThrow(
+//                () -> new ResourceNotFoundException("Category", "id", id.toString())
+//        );
+//        categoriesRepository.deleteById(id);
+//        CategoriesDto categoryDtoDeleted = CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
+//
+//        return categoryDtoDeleted;
+//    }
+
+
     @Override
+    @Transactional
+    // Ensures that both operations (delete books and delete category) are performed in a single transaction
     public CategoriesDto deleteCategoryById(Long id) {
+        // Find the category by ID
         Categories category = categoriesRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Category", "id", id.toString())
         );
-        categoriesRepository.deleteById(id);
-        CategoriesDto categoryDtoDeleted = CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
 
+        // Delete all books associated with the category
+        booksRepository.deleteByCategories(category);
+
+        // Delete the category
+        categoriesRepository.deleteById(id);
+
+        // Convert the deleted category to a DTO and return it
+        CategoriesDto categoryDtoDeleted = CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
         return categoryDtoDeleted;
     }
-
     @Override
     public CategoriesDto deleteCategoryByName(String name) {
         Categories category = categoriesRepository.findByCategoryName(name).orElseThrow(

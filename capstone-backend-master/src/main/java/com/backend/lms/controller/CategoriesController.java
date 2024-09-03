@@ -3,6 +3,7 @@ package com.backend.lms.controller;
 import com.backend.lms.dto.categories.CategoriesDto;
 import com.backend.lms.service.ICategoriesService;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -22,24 +23,39 @@ public class CategoriesController {
 
     private final ICategoriesService iCategoriesService;
 
+
     @GetMapping("/allCategories")
     public ResponseEntity<?> getCategories(
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(required = false) String search) {
 
-        if (page == null || size == null) {
-            // Fetch all categories without pagination
-            List<CategoriesDto> categoryDtoList = iCategoriesService.getAllCategories(Sort.by(Sort.Direction.fromString(sortDir), sortBy));
-            return ResponseEntity.ok(categoryDtoList);
-        } else {
-            Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortDir), sortBy);
-            Page<CategoriesDto> categoryDTOPage = iCategoriesService.getCategoriesPaginated(pageable, search);
-            return ResponseEntity.status(HttpStatus.OK).body(categoryDTOPage);
+        // Ensure valid page and size
+        if (page < 0) {
+            page = 0;
         }
+        if (size <= 0) {
+            size = 10; // default size
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortDir), sortBy);
+        Page<CategoriesDto> categoryDTOPage = iCategoriesService.getCategoriesPaginated(pageable, search);
+
+        return ResponseEntity.status(HttpStatus.OK).body(categoryDTOPage);
     }
+
+    @GetMapping("/allForDropDown")
+    public ResponseEntity<List<CategoriesDto>> getAllCategories(
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        List<CategoriesDto> categories = iCategoriesService.getAllCategories(sort);
+        return ResponseEntity.status(HttpStatus.OK).body(categories);
+    }
+
 
     @GetMapping("/categoryCount")
     public ResponseEntity<Long> getCategoryCount() {
@@ -74,7 +90,10 @@ public class CategoriesController {
 
     @DeleteMapping("/deleteCategory/{id}")
     public ResponseEntity<CategoriesDto> deleteCategory(@PathVariable Long id) {
+        // Call the service method to delete the category and associated books
         CategoriesDto categoryDTO = iCategoriesService.deleteCategoryById(id);
+
+        // Return the response with the deleted category details
         return ResponseEntity.status(HttpStatus.OK).body(categoryDTO);
     }
 
