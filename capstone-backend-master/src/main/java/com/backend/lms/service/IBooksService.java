@@ -17,8 +17,6 @@ public interface IBooksService {
     List<BooksOutDto> getAllBooks(Sort sort);
     Page<BooksOutDto> getBooksPaginated(Pageable pageable, String search);
     Long getBookTitleCount();
-    //Long getTotalBooksCount();
-
 
     BooksOutDto getBookByTitle(String title);
     BooksOutDto getBookById(Long id);

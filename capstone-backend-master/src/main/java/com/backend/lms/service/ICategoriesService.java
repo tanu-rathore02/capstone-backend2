@@ -27,5 +27,6 @@ public interface ICategoriesService {
     CategoriesDto updateCategory(Long id, CategoriesDto categoriesDto);
 
     CategoriesDto deleteCategoryById(Long id);
+
     CategoriesDto deleteCategoryByName(String name);
 }

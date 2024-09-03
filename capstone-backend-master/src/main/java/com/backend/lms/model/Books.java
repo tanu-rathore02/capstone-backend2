@@ -19,6 +19,6 @@ public class Books {
     private int availability;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false) // Column name should match your DB schema
+    @JoinColumn(name = "category_id", nullable = false)
     private Categories categories;
 }

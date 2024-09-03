@@ -25,7 +25,7 @@ public final class UserMapper {
         user.setEmail(userDTO.getEmail());
         user.setMobileNumber(userDTO.getMobileNumber());
         user.setRole(userDTO.getRole());
-//
+
         return user;
     }
 

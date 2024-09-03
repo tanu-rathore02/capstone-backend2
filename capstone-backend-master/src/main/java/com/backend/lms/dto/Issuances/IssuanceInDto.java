@@ -9,19 +9,19 @@ import java.time.LocalDateTime;
 @Getter @Setter
 public class IssuanceInDto {
 
-    @NotEmpty(message = "User can not be a null or empty")
+    @NotEmpty(message = "User can not be null")
     private Long userId;
 
-    @NotEmpty(message = "Book can not be a null or empty")
+    @NotEmpty(message = "Book can not be  null")
     private Long bookId;
 
-    @NotEmpty(message = "Return time can not be a null or empty")
+    @NotEmpty(message = "Return time can not be  null")
     private LocalDateTime returnDate;
 
-    @NotEmpty(message = "Status can not be a null or empty")
+    @NotEmpty(message = "Status can not be null ")
     private String status;
 
-    @NotEmpty(message = "Issuance type can not be a null or empty")
+    @NotEmpty(message = "Issuance type can not be  null")
     private String issuanceType;
 
 }

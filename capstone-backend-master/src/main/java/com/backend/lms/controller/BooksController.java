@@ -63,12 +63,6 @@ public class BooksController {
         return ResponseEntity.status(HttpStatus.OK).body(count);
     }
 
-//    @GetMapping("/total-count")
-//    public ResponseEntity<Long> getTotalBooksCount() {
-//        Long count = iBooksService.getTotalBooksCount();
-//        return ResponseEntity.status(HttpStatus.OK).body(count);
-//    }
-
     @GetMapping("/author/{author}")
     public ResponseEntity<List<BooksOutDto>> getBooksByAuthor(@PathVariable String author) {
         List<BooksOutDto> bookOutDTOList = iBooksService.getBooksByAuthor(author);
@@ -93,26 +87,25 @@ public class BooksController {
         return ResponseEntity.status(HttpStatus.OK).body(bookOutDTO);
     }
 
-    //post api
+    //Post API
     @PostMapping("/createBook")
     public ResponseEntity<BooksOutDto> createBook(@RequestBody BooksInDto booksInDto) {
         BooksOutDto booksOutDto = iBooksService.createBook(booksInDto);
         return ResponseEntity.status(HttpStatus.OK).body(booksOutDto);
     }
 
-    //updating a book
+    //Update API
     @PutMapping("/updateBook/{id}")
     public ResponseEntity<BooksOutDto> updateBook(@PathVariable Long id, @RequestBody BooksInDto booksInDto) {
         BooksOutDto bookOutDTO = iBooksService.updateBook(id, booksInDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(bookOutDTO);
     }
 
-    //delete a book
+    //Delete API
     @DeleteMapping("/deleteBook/{id}")
     public ResponseEntity<BooksOutDto> deleteBookById(@PathVariable Long id) {
         BooksOutDto booksOutDto = iBooksService.deleteBookById(id);
         return ResponseEntity.status(HttpStatus.OK).body(booksOutDto);
     }
-
 
 }

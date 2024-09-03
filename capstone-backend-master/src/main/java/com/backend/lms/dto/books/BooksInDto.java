@@ -14,6 +14,6 @@ public class BooksInDto {
     private int availability;
 
     @NotEmpty(message = "Category can not be null")
-    private Long categoryId;  // Replacing CategoriesDto with just categoryId
+    private Long categoryId;
 
 }

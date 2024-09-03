@@ -20,7 +20,7 @@ public interface IUserService {
     List<UserDto> getAllUsers();
     Long getUserCount();
 
-    UserDto deleteUserByEmail(String email);
+
     UserDto deleteUserByMobile(String mobileNumber);
 
     UserDto registerUser(RegisterRequestDto registerRequestDto);

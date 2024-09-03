@@ -3,7 +3,6 @@ package com.backend.lms.dto.auth;
 
 public class LoginRequestDto {
 
-    //    It will be either mobileNumber or email
     private String username;
 
     private String password;

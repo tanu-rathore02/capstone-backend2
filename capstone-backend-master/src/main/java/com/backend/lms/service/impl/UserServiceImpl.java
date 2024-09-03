@@ -18,10 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -98,18 +94,6 @@ public class UserServiceImpl implements IUserService {
         return userCount;
     }
 
-    @Override
-    public UserDto deleteUserByEmail(String email) {
-        Users user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UsernameNotFoundException("User not found for " + email)
-        );
-
-        userRepository.deleteById(user.getId());
-
-        UserDto userDto = UserMapper.mapToUserDto(user, new UserDto());
-
-        return userDto;
-    }
 
     @Override
     public UserDto deleteUserByMobile(String mobileNumber) {

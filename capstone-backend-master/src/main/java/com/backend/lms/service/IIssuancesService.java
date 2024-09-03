@@ -33,25 +33,3 @@ public interface IIssuancesService {
     List<IssuanceOutDto> getIssuanceByBookId(Long bookId);
 }
 
-
-//@Service
-//public interface IIssuancesService {
-//
-//    List<IssuanceOutDto> getAllIssuances(Sort sort);
-//
-//    Page<IssuanceOutDto> getIssuancesPaginated(Pageable pageable, String search);
-//
-//    IssuanceOutDto getIssuanceById(Long id);
-//
-//    IssuanceOutDto createIssuance(IssuanceInDto issuanceInDto);
-//
-//    IssuanceOutDto deleteIssuanceById(Long id);
-//
-//    IssuanceOutDto updateIssuance(Long id, IssuanceInDto issuanceInDto);
-//
-//    IssuanceOutDto updateStatus(Long id, String newStatus);
-//
-//    List<IssuanceOutDto> getIssuanceByUserId(Long userId);
-//
-//    List<IssuanceOutDto> getIssuanceByBookId(Long bookId);
-//}

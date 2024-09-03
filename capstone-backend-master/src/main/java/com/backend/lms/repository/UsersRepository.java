@@ -1,7 +1,5 @@
 package com.backend.lms.repository;
 
-
-
 import com.backend.lms.model.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

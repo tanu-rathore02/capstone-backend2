@@ -93,35 +93,18 @@ public class CategoriesServiceImplement implements ICategoriesService {
         return categoryDtoUpdated;
    }
 
-   //Delete APIs
-//    @Override
-//    public CategoriesDto deleteCategoryById(Long id) {
-//        Categories category = categoriesRepository.findById(id).orElseThrow(
-//                () -> new ResourceNotFoundException("Category", "id", id.toString())
-//        );
-//        categoriesRepository.deleteById(id);
-//        CategoriesDto categoryDtoDeleted = CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
-//
-//        return categoryDtoDeleted;
-//    }
-
 
     @Override
     @Transactional
-    // Ensures that both operations (delete books and delete category) are performed in a single transaction
     public CategoriesDto deleteCategoryById(Long id) {
-        // Find the category by ID
         Categories category = categoriesRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Category", "id", id.toString())
         );
 
-        // Delete all books associated with the category
         booksRepository.deleteByCategories(category);
 
-        // Delete the category
         categoriesRepository.deleteById(id);
 
-        // Convert the deleted category to a DTO and return it
         CategoriesDto categoryDtoDeleted = CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
         return categoryDtoDeleted;
     }

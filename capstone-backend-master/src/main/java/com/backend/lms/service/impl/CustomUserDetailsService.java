@@ -24,14 +24,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         if (username.contains("@")) {
-//            email
+
             Users user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User details not found for " + username));
             List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
 
             return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
 
         } else {
-//            mobileNumber
+
             Users user = userRepository.findByMobileNumber(username).orElseThrow(() -> new UsernameNotFoundException("User details not found for " + username));
             List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
 

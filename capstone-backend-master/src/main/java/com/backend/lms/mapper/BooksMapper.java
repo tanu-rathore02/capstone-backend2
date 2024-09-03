@@ -21,7 +21,7 @@ public final class BooksMapper {
     }
 
     public static Books mapToBook(BooksInDto booksInDto, Books books, CategoriesRepository categoriesRepository) {
-        // Find the category by the ID provided in booksInDto
+
         Categories categories = categoriesRepository.findById(booksInDto.getCategoryId()).orElseThrow(
                 () -> new ResourceNotFoundException("Category", "id", booksInDto.getCategoryId().toString())
         );

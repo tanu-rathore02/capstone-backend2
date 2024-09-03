@@ -3,8 +3,6 @@ package com.backend.lms.controller;
 import com.backend.lms.dto.categories.CategoriesDto;
 import com.backend.lms.service.ICategoriesService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,12 +30,12 @@ public class CategoriesController {
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(required = false) String search) {
 
-        // Ensure valid page and size
+
         if (page < 0) {
             page = 0;
         }
         if (size <= 0) {
-            size = 10; // default size
+            size = 10;
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortDir), sortBy);
