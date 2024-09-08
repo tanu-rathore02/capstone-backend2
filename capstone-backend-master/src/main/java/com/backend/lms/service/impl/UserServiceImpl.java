@@ -5,9 +5,14 @@ package com.backend.lms.service.impl;
 import com.backend.lms.constants.JWTConstants;
 import com.backend.lms.dto.users.RegisterRequestDto;
 import com.backend.lms.dto.users.UserDto;
+import com.backend.lms.exception.EntityConstraintViolationException;
+import com.backend.lms.exception.ResourceAlreadyExistsException;
+import com.backend.lms.model.Categories;
 import com.backend.lms.model.Users;
 import com.backend.lms.mapper.UserMapper;
+import com.backend.lms.repository.IssuancesRepository;
 import com.backend.lms.repository.UsersRepository;
+import com.backend.lms.service.ISMSService;
 import com.backend.lms.service.IUserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,14 +23,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -35,6 +44,9 @@ public class UserServiceImpl implements IUserService {
     private final UsersRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Environment env;
+    private final ISMSService ismsService;
+    private final IssuancesRepository issuancesRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public List<UserDto> getAllUsers(Sort sort) {
@@ -101,6 +113,14 @@ public class UserServiceImpl implements IUserService {
                 () -> new UsernameNotFoundException("User not found for " + mobileNumber)
         );
 
+
+        boolean isUserHavingIssuedBooks = issuancesRepository.existsByUsersIdAndStatus(user.getId(), "issued");
+        if (isUserHavingIssuedBooks) {
+
+            throw new EntityConstraintViolationException("Cannot delete user because they have issued books.");
+        }
+
+
         userRepository.deleteById(user.getId());
 
         UserDto userDto = UserMapper.mapToUserDto(user, new UserDto());
@@ -108,31 +128,81 @@ public class UserServiceImpl implements IUserService {
         return userDto;
     }
 
-    @Override
-    public UserDto registerUser(RegisterRequestDto registerRequestDto) {
-        Users user = UserMapper.mapToUser(registerRequestDto, new Users());
-        user.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));
-        Users savedUser = userRepository.save(user);
-        UserDto userDtO = UserMapper.mapToUserDto(savedUser, new UserDto());
-        return  userDtO;
+    private String generateRandomPassword() {
+        return RandomStringUtils.randomAlphanumeric(10);
+    }
+
+    public String generatePassword(String rawPassword) {
+        return bCryptPasswordEncoder.encode(rawPassword);
     }
 
     @Override
-    public UserDto updateUser(String mobileNumber, RegisterRequestDto registerRequestDto) {
+    public UserDto registerUser(RegisterRequestDto registerRequestDto, UserDto userDto) {
+
+        if (userRepository.findByMobileNumber(userDto.getMobileNumber()).isPresent()) {
+            throw new ResourceAlreadyExistsException("User", "mobile number", userDto.getMobileNumber());
+        }
+
+        Users user = UserMapper.mapToUser(registerRequestDto, new Users());
+
+
+//        user.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));
+
+        String randomPassword = generateRandomPassword();
+
+        String encryptedPassword = generatePassword(randomPassword);
+        user.setPassword("{bcrypt}" + encryptedPassword);
+
+        Users savedUser = userRepository.save(user);
+
+
+        String message = String.format( "\nWelcome %s\n" +
+                        "You have successfully registered to Library\n" +
+                        "These are your login credentials\n" +
+                        "Username: %s (OR) %s\n" +
+                        "Password: %s",
+                savedUser.getName(),
+                savedUser.getMobileNumber(),
+                savedUser.getEmail(),
+                user.getPassword());
+
+        ismsService.verifyNumber(savedUser.getMobileNumber());
+        ismsService.sendSms(savedUser.getMobileNumber(), message);
+        UserDto userDtO = UserMapper.mapToUserDto(savedUser, new UserDto());
+        return  userDtO;
+    }
+    @Override
+    public UserDto updateUser(String mobileNumber, RegisterRequestDto registerRequestDto, Long id) {
+
         Users user = userRepository.findByMobileNumber(mobileNumber).orElseThrow(
                 () -> new UsernameNotFoundException("User not found for mobile no. " + mobileNumber)
         );
 
-        user = UserMapper.mapToUser(registerRequestDto, user);
-        user.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));
 
+        Optional<Users> existingUser = userRepository.findByMobileNumber(registerRequestDto.getMobileNumber());
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
+            throw new ResourceAlreadyExistsException("User", "mobile number", registerRequestDto.getMobileNumber());
+        }
+
+
+        user = UserMapper.mapToUser(registerRequestDto, user);
+
+
+        if (registerRequestDto.getPassword() != null && !registerRequestDto.getPassword().isEmpty()) {
+
+            user.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));
+        } else {
+
+            user.setPassword(user.getPassword());
+        }
+
+        // Save the updated user details
         Users updatedUser = userRepository.save(user);
 
-        UserDto userDto = UserMapper.mapToUserDto(updatedUser, new UserDto());
-
-        return  userDto;
-
+        // Map the updated user entity to a UserDto and return
+        return UserMapper.mapToUserDto(updatedUser, new UserDto());
     }
+
 
     @Override
     public UserDto getUserByToken(String jwt) {

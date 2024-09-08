@@ -88,10 +88,9 @@ public class CategoriesController {
 
     @DeleteMapping("/deleteCategory/{id}")
     public ResponseEntity<CategoriesDto> deleteCategory(@PathVariable Long id) {
-        // Call the service method to delete the category and associated books
+
         CategoriesDto categoryDTO = iCategoriesService.deleteCategoryById(id);
 
-        // Return the response with the deleted category details
         return ResponseEntity.status(HttpStatus.OK).body(categoryDTO);
     }
 

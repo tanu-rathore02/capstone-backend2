@@ -45,6 +45,11 @@ public class IssuancesController {
     }
 
 
+    @GetMapping("/type/count")
+    public ResponseEntity<Long> getIssuanceByTypeCount() {
+        return ResponseEntity.ok(iIssuancesService.getIssuanceCountByType());
+    }
+
     @GetMapping("/issuance/{id}")
     public ResponseEntity<IssuanceOutDto> getIssuanceById(@PathVariable Long id) {
         IssuanceOutDto issuanceOutDTO = iIssuancesService.getIssuanceById(id);

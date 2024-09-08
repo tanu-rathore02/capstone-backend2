@@ -20,6 +20,8 @@ public interface IIssuancesService {
 
     IssuanceOutDto getIssuanceById(Long id);
 
+    Long getIssuanceCountByType();
+
     IssuanceOutDto createIssuance(IssuanceInDto issuanceInDto);
 
     IssuanceOutDto deleteIssuanceById(Long id);
@@ -31,5 +33,7 @@ public interface IIssuancesService {
     List<IssuanceOutDto> getIssuanceByUserId(Long userId);
 
     List<IssuanceOutDto> getIssuanceByBookId(Long bookId);
+
+//    Long getIssuanceCountByType();
 }
 

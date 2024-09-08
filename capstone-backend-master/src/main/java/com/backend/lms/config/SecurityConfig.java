@@ -63,19 +63,19 @@ public class SecurityConfig {
 //                Book routes
                         .requestMatchers( "/api/books/allBooks","/api/books/getBook/{id}", "/api/books/allForDropDown").hasRole("ADMIN")
                         .requestMatchers( "/api/books/createBook", "/api/books/updateBook/{id}").hasRole("ADMIN")
-                        .requestMatchers( "/api/books/deleteBook/{id}", "/api/books/title/{title}").hasRole("ADMIN")
-                        .requestMatchers("/api/books/categoryId/{categoryId}","api/books/author/{author}","api/books/title-count").hasRole("ADMIN")
+                        .requestMatchers( "/api/books/deleteBook/{id}", "/api/books/deleteBook/title/{title}","/api/books/title/{title}").hasRole("ADMIN")
+                        .requestMatchers("/api/books/categoryId/{categoryId}","api/books/author/{author}","api/books/title-count","api/user-count").hasRole("ADMIN")
                         .requestMatchers( HttpMethod.GET, "/api/issuances/**").hasAnyRole("ADMIN", "USER")
 
 
 //                User routes
                         .requestMatchers( "/api/user/**").hasRole("ADMIN")
                         .requestMatchers( "/api/users").hasRole("ADMIN")
-                        .requestMatchers( "/api/user-count", "/api/allUsersForDropDown").hasRole("ADMIN")
+                        .requestMatchers( "/api/user-count", "/api/allUsersForDropDown").permitAll()
                         .requestMatchers( HttpMethod.GET, "/api/user/**").hasAnyRole("ADMIN", "USER")
 
 //                Issuance routes
-                        .requestMatchers("/api/issuances/allIssuances", "/api/issuances/issuance/{id}").hasRole("ADMIN")
+                        .requestMatchers("/api/issuances/allIssuances", "/api/issuances/issuance/{id}", "/api/issuances/type/count").hasRole("ADMIN")
                         .requestMatchers("/api/issuance/issuances").authenticated()
                         .requestMatchers("/api/issuances/user/{userId}","/api/issuances/book/{bookId}").hasRole("ADMIN")
                         .requestMatchers("/api/issuances/createIssuance", "api/issuances/updateIssuance/{id}").hasRole("ADMIN")

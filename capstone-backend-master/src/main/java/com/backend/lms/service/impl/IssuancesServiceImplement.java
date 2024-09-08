@@ -10,6 +10,7 @@ import com.backend.lms.repository.BooksRepository;
 import com.backend.lms.repository.IssuancesRepository;
 import com.backend.lms.repository.UsersRepository;
 import com.backend.lms.service.IIssuancesService;
+import com.backend.lms.service.ISMSService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class IssuancesServiceImplement implements IIssuancesService {
     private final IssuancesRepository issuancesRepository;
     private final UsersRepository usersRepository;
     private final BooksRepository booksRepository;
+    private  final ISMSService ismsService;
 
     @Override
     public List<IssuanceOutDto> getAllIssuances(Sort sort) {
@@ -54,6 +56,11 @@ public class IssuancesServiceImplement implements IIssuancesService {
     }
 
     @Override
+    public Long getIssuanceCountByType() {
+        return issuancesRepository.count();
+    }
+
+    @Override
     public List<IssuanceOutDto> getIssuanceByUserId(Long userId) {
         List<Issuances> issuancesList = issuancesRepository.findByUsersId(userId);
         return issuancesList.stream()
@@ -63,7 +70,7 @@ public class IssuancesServiceImplement implements IIssuancesService {
 
     @Override
     public List<IssuanceOutDto> getIssuanceByBookId(Long bookId) {
-        List<Issuances> issuancesList = issuancesRepository.findByBooksId(bookId);
+        List<Issuances> issuancesList = issuancesRepository.findByBooks_Id(bookId);
         return issuancesList.stream()
                 .map(issuance -> IssuancesMapper.mapToIssuanceOutDto(issuance, new IssuanceOutDto()))
                 .collect(Collectors.toList());
@@ -83,6 +90,19 @@ public class IssuancesServiceImplement implements IIssuancesService {
         }
 
         Issuances savedIssuance = issuancesRepository.save(issuance);
+
+        String message = String.format("\nYou have issued the book '%s'\n" +
+                        "author '%s'\n" +
+                        "From %s\n" +
+                        "To %s",
+                savedIssuance.getBooks().getTitle(),
+                savedIssuance.getBooks().getAuthor(),
+                savedIssuance.getIssueDate().toLocalDate(),
+                savedIssuance.getReturnDate().toLocalDate());
+
+        ismsService.sendSms(savedIssuance.getUsers().getMobileNumber(), message);
+
+
         return IssuancesMapper.mapToIssuanceOutDto(savedIssuance, new IssuanceOutDto());
     }
 

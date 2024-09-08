@@ -67,19 +67,19 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestBody RegisterRequestDto registerRequestDto) {
-        UserDto savedUser = iUserService.registerUser(registerRequestDto);
+    public ResponseEntity<UserDto> registerUser(@RequestBody RegisterRequestDto registerRequestDto, UserDto userDto) {
+        UserDto savedUser = iUserService.registerUser(registerRequestDto, userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
-    @DeleteMapping("/user/{mobileNumber}")
+    @DeleteMapping("/user/deleteUser/{mobileNumber}")
     public ResponseEntity<UserDto> deleteUser(@PathVariable String mobileNumber) {
         UserDto userDto = iUserService.deleteUserByMobile(mobileNumber);
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 
-    @PutMapping("/user/{mobileNumber}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable String mobileNumber, @RequestBody RegisterRequestDto registerRequestDto) {
-        UserDto userDto = iUserService.updateUser(mobileNumber, registerRequestDto);
+    @PutMapping("/user/updateUser/{mobileNumber}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable String mobileNumber, @RequestBody RegisterRequestDto registerRequestDto, Long id) {
+        UserDto userDto = iUserService.updateUser(mobileNumber, registerRequestDto,id);
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 

@@ -23,4 +23,8 @@ public interface BooksRepository extends JpaRepository<Books, Long> {
 
     void deleteByCategories(Categories category);
 
+    List<Books> findByCategories_Id(Long categoryId);
+
+    void deleteByCategories_Id(Long categoryId);
+
 }

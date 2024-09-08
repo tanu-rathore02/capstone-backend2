@@ -1,12 +1,15 @@
 package com.backend.lms.service.impl;
 
-
 import com.backend.lms.dto.categories.CategoriesDto;
+import com.backend.lms.exception.EntityConstraintViolationException;
+import com.backend.lms.exception.ResourceAlreadyExistsException;
 import com.backend.lms.exception.ResourceNotFoundException;
 import com.backend.lms.mapper.CategoriesMapper;
+import com.backend.lms.model.Books;
 import com.backend.lms.model.Categories;
 import com.backend.lms.repository.BooksRepository;
 import com.backend.lms.repository.CategoriesRepository;
+import com.backend.lms.repository.IssuancesRepository;
 import com.backend.lms.service.ICategoriesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,83 +19,83 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CategoriesServiceImplement implements ICategoriesService {
-    private  final CategoriesRepository categoriesRepository;
+    private final CategoriesRepository categoriesRepository;
     private final BooksRepository booksRepository;
+    private final IssuancesRepository issuancesRepository;
 
-
-   //get APIs
-   @Override
+    // Get APIs
+    @Override
     public List<CategoriesDto> getAllCategories(Sort sort){
-       return categoriesRepository.findAll(sort).stream()
-               .map(categories -> CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto()))
-               .collect(Collectors.toList());
-   }
+        return categoriesRepository.findAll(sort).stream()
+                .map(categories -> CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto()))
+                .collect(Collectors.toList());
+    }
 
-   @Override
+    @Override
     public Page<CategoriesDto> getCategoriesPaginated(Pageable pageable, String search){
-       Page<Categories> categoriesPage;
-       if(search != null && !search.isEmpty()){
-           categoriesPage = categoriesRepository.findByCategoryNameContainingIgnoreCase(search, pageable);
-       }else {
-           categoriesPage = categoriesRepository.findAll(pageable);
-       }
-       return categoriesPage.map(categories -> CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto()));
-   }
-
+        Page<Categories> categoriesPage;
+        if(search != null && !search.isEmpty()){
+            categoriesPage = categoriesRepository.findByCategoryNameContainingIgnoreCase(search, pageable);
+        } else {
+            categoriesPage = categoriesRepository.findAll(pageable);
+        }
+        return categoriesPage.map(categories -> CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto()));
+    }
 
     @Override
     public Long getCategoriesCount() {
-       return categoriesRepository.count();
+        return categoriesRepository.count();
     }
 
-
+    @Override
     public CategoriesDto getCategoryById(Long id){
-       Categories categories = categoriesRepository.findById(id).orElseThrow(
-               () -> new ResourceNotFoundException("Category", "id", id.toString())
-       );
-       CategoriesDto categoriesDto = CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto());
-       return categoriesDto;
+        Categories categories = categoriesRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Category", "id", id.toString())
+        );
+        return CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto());
     }
 
     @Override
     public CategoriesDto getCategoryByName(String categoryName){
-       Categories categories = categoriesRepository.findByCategoryName(categoryName).orElseThrow(
-               () -> new ResourceNotFoundException("Category", "name", categoryName)
-       );
-
-       CategoriesDto categoriesDto = CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto());
-       return categoriesDto;
+        Categories categories = categoriesRepository.findByCategoryName(categoryName).orElseThrow(
+                () -> new ResourceNotFoundException("Category", "name", categoryName)
+        );
+        return CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto());
     }
 
-    //Post API
+    // Post API
     @Override
-    public CategoriesDto createCategory(CategoriesDto categoriesDto){
-       Categories category = CategoriesMapper.mapToCategories(categoriesDto, new Categories());
-       Categories savedCategory = categoriesRepository.save(category);
-
-       CategoriesDto categoryDtoPosted = CategoriesMapper.mapToCategoriesDto(savedCategory, new CategoriesDto());
-       return categoryDtoPosted;
+    public CategoriesDto createCategory(CategoriesDto categoriesDto) {
+        if (categoriesRepository.findByCategoryName(categoriesDto.getCategoryName()).isPresent()) {
+            throw new ResourceAlreadyExistsException("Category", "categoryName", categoriesDto.getCategoryName());
+        }
+        Categories category = CategoriesMapper.mapToCategories(categoriesDto, new Categories());
+        Categories savedCategory = categoriesRepository.save(category);
+        return CategoriesMapper.mapToCategoriesDto(savedCategory, new CategoriesDto());
     }
 
-    //Put API
+    // Put API
     @Override
-    public CategoriesDto updateCategory(Long id, CategoriesDto categoriesDto){
-       Categories category = categoriesRepository.findById(id).orElseThrow(
-               () -> new ResourceNotFoundException("Category" , "id", id.toString())
-       );
+    public CategoriesDto updateCategory(Long id, CategoriesDto categoriesDto) {
+        Categories category = categoriesRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Category", "id", id.toString())
+        );
+
+        Optional<Categories> existingCategory = categoriesRepository.findByCategoryName(categoriesDto.getCategoryName());
+        if (existingCategory.isPresent() && !existingCategory.get().getId().equals(id)) {
+            throw new ResourceAlreadyExistsException("Category", "categoryName", categoriesDto.getCategoryName());
+        }
+
         category = CategoriesMapper.mapToCategories(categoriesDto, category);
         Categories updatedCategory = categoriesRepository.save(category);
-
-        CategoriesDto categoryDtoUpdated = CategoriesMapper.mapToCategoriesDto(updatedCategory, new CategoriesDto());
-
-        return categoryDtoUpdated;
-   }
-
+        return CategoriesMapper.mapToCategoriesDto(updatedCategory, new CategoriesDto());
+    }
 
     @Override
     @Transactional
@@ -102,23 +105,26 @@ public class CategoriesServiceImplement implements ICategoriesService {
         );
 
         booksRepository.deleteByCategories(category);
-
         categoriesRepository.deleteById(id);
-
-        CategoriesDto categoryDtoDeleted = CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
-        return categoryDtoDeleted;
+        return CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
     }
+
     @Override
+    @Transactional
     public CategoriesDto deleteCategoryByName(String name) {
         Categories category = categoriesRepository.findByCategoryName(name).orElseThrow(
-                () -> new ResourceNotFoundException("Customer", "name", name)
+                () -> new ResourceNotFoundException("Category", "name", name)
         );
-        categoriesRepository.deleteById(category.getId());
-        CategoriesDto categoryDtoDeleted = CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
 
-        return categoryDtoDeleted;
+        List<Books> books = booksRepository.findByCategories_Id(category.getId());
+        for (Books book : books) {
+            if (issuancesRepository.existsByBooks_IdAndStatus(book.getId(), "issued")) {
+                throw new EntityConstraintViolationException("Cannot delete category because one or more books are issued.");
+            }
+        }
+
+        booksRepository.deleteByCategories_Id(category.getId());
+        categoriesRepository.deleteById(category.getId());
+        return CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
     }
 }
-
-
-

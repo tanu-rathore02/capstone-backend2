@@ -108,4 +108,10 @@ public class BooksController {
         return ResponseEntity.status(HttpStatus.OK).body(booksOutDto);
     }
 
+    @DeleteMapping("/deleteBook/title/{title}")
+    public ResponseEntity<BooksOutDto> deleteBookByTitle(@PathVariable String title) {
+        BooksOutDto booksOutDto = iBooksService.deleteBookByTitle(title);
+        return ResponseEntity.status(HttpStatus.OK).body(booksOutDto);
+    }
+
 }

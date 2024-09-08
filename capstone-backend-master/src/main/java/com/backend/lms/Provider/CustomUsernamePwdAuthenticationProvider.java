@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.security.SecureRandom;
+
 @Component
 @RequiredArgsConstructor
 public class CustomUsernamePwdAuthenticationProvider implements AuthenticationProvider {

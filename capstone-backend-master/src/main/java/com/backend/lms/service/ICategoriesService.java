@@ -15,6 +15,7 @@ public interface ICategoriesService {
     List<CategoriesDto> getAllCategories(Sort sort);
 
     Page<CategoriesDto> getCategoriesPaginated(Pageable pageable, String search);
+    ;
 
     Long getCategoriesCount();
 

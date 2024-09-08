@@ -36,6 +36,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+
+
         String jwt = "";
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 loginRequestDto.getUsername(),
