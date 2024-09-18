@@ -2,6 +2,7 @@ package com.backend.lms.controller;
 
 import com.backend.lms.dto.Issuances.IssuanceInDto;
 import com.backend.lms.dto.Issuances.IssuanceOutDto;
+import com.backend.lms.dto.response.ResponseDto;
 import com.backend.lms.service.IIssuancesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,9 +46,11 @@ public class IssuancesController {
     }
 
 
+
     @GetMapping("/type/count")
     public ResponseEntity<Long> getIssuanceByTypeCount() {
-        return ResponseEntity.ok(iIssuancesService.getIssuanceCountByType());
+        Long count = iIssuancesService.getIssuanceCountByType();
+        return ResponseEntity.ok(count);
     }
 
     @GetMapping("/issuance/{id}")
@@ -71,28 +74,37 @@ public class IssuancesController {
     }
 
     @PostMapping("/createIssuance")
-    public ResponseEntity<IssuanceOutDto> createIssuance(@RequestBody IssuanceInDto issuanceInDto) {
+    public ResponseEntity<ResponseDto> createIssuance(@RequestBody IssuanceInDto issuanceInDto) {
         IssuanceOutDto issuanceOutDto = iIssuancesService.createIssuance(issuanceInDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(issuanceOutDto);
+
+        ResponseDto responseDto = new ResponseDto("200", "Issuance created successfully");
+
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @PutMapping("/updateIssuance/{id}")
-    public ResponseEntity<IssuanceOutDto> updateIssuance(@PathVariable Long id, @RequestBody IssuanceInDto issuanceInDto) {
+    public ResponseEntity<ResponseDto> updateIssuance(@PathVariable Long id, @RequestBody IssuanceInDto issuanceInDto) {
         IssuanceOutDto updatedIssuanceOutDto = iIssuancesService.updateIssuance(id, issuanceInDto);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedIssuanceOutDto);
+
+        ResponseDto responseDto = new ResponseDto("200", "Issuance updated successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @PutMapping("/updateStatus/{id}")
-    public ResponseEntity<IssuanceOutDto> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<ResponseDto> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
         String newStatus = requestBody.get("newStatus");
-        IssuanceOutDto issuanceOutDTO = iIssuancesService.updateStatus(id, newStatus);
-        return ResponseEntity.status(HttpStatus.OK).body(issuanceOutDTO);
+        ResponseDto responseDto = new ResponseDto("200", "Issuance updated successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @DeleteMapping("/deleteIssuance/{id}")
-    public ResponseEntity<IssuanceOutDto> deleteIssuance(@PathVariable Long id) {
+    public ResponseEntity<ResponseDto> deleteIssuance(@PathVariable Long id) {
         IssuanceOutDto issuanceOutDTO = iIssuancesService.deleteIssuanceById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(issuanceOutDTO);
+
+
+        ResponseDto responseDto = new ResponseDto("200", "Issuance deleted successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }
 

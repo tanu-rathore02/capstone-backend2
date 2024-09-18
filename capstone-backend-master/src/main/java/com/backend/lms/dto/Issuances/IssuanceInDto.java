@@ -2,6 +2,7 @@ package com.backend.lms.dto.Issuances;
 
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -9,19 +10,19 @@ import java.time.LocalDateTime;
 @Getter @Setter
 public class IssuanceInDto {
 
-    @NotEmpty(message = "User can not be null")
+    @NotNull(message = "User cannot be null")
     private Long userId;
 
-    @NotEmpty(message = "Book can not be  null")
+    @NotNull(message = "Book cannot be null")
     private Long bookId;
 
-    @NotEmpty(message = "Return time can not be  null")
+    @NotNull(message = "Return time cannot be null")
     private LocalDateTime returnDate;
 
-    @NotEmpty(message = "Status can not be null ")
+    @NotEmpty(message = "Status cannot be null")
     private String status;
 
-    @NotEmpty(message = "Issuance type can not be  null")
+    @NotEmpty(message = "Issuance type cannot be null")
     private String issuanceType;
-
 }
+

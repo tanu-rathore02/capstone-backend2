@@ -1,5 +1,6 @@
 package com.backend.lms.model;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter @Setter
+@ToString
 @Table(name="issuances")
 public class Issuances {
 

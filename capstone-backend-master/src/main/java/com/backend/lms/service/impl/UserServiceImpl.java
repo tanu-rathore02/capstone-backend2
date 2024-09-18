@@ -6,7 +6,9 @@ import com.backend.lms.constants.JWTConstants;
 import com.backend.lms.dto.users.RegisterRequestDto;
 import com.backend.lms.dto.users.UserDto;
 import com.backend.lms.exception.EntityConstraintViolationException;
+import com.backend.lms.exception.MethodNotAllowedException;
 import com.backend.lms.exception.ResourceAlreadyExistsException;
+import com.backend.lms.exception.ResourceNotFoundException;
 import com.backend.lms.model.Categories;
 import com.backend.lms.model.Users;
 import com.backend.lms.mapper.UserMapper;
@@ -23,7 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.User;
+
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -110,14 +112,13 @@ public class UserServiceImpl implements IUserService {
     @Override
     public UserDto deleteUserByMobile(String mobileNumber) {
         Users user = userRepository.findByMobileNumber(mobileNumber).orElseThrow(
-                () -> new UsernameNotFoundException("User not found for " + mobileNumber)
+                () -> new ResourceNotFoundException("User", "mobileNumber", mobileNumber)
         );
 
-
-        boolean isUserHavingIssuedBooks = issuancesRepository.existsByUsersIdAndStatus(user.getId(), "issued");
+        boolean isUserHavingIssuedBooks = issuancesRepository.existsByUsersIdAndStatus(user.getId(), "ISSUED");
         if (isUserHavingIssuedBooks) {
 
-            throw new EntityConstraintViolationException("Cannot delete user because they have issued books.");
+            throw new MethodNotAllowedException("Cannot delete user because one or more books are issued.");
         }
 
 
@@ -138,15 +139,16 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserDto registerUser(RegisterRequestDto registerRequestDto, UserDto userDto) {
-
-        if (userRepository.findByMobileNumber(userDto.getMobileNumber()).isPresent()) {
+        Optional<Users> users = userRepository.findByMobileNumber(registerRequestDto.getMobileNumber());
+        System.out.println(users);
+        if (users.isPresent()) {
             throw new ResourceAlreadyExistsException("User", "mobile number", userDto.getMobileNumber());
         }
 
+
+
         Users user = UserMapper.mapToUser(registerRequestDto, new Users());
-
-
-//        user.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));
+        user.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));
 
         String randomPassword = generateRandomPassword();
 
@@ -166,42 +168,49 @@ public class UserServiceImpl implements IUserService {
                 savedUser.getEmail(),
                 user.getPassword());
 
-        ismsService.verifyNumber(savedUser.getMobileNumber());
-        ismsService.sendSms(savedUser.getMobileNumber(), message);
+//        ismsService.verifyNumber(savedUser.getMobileNumber());
+//        ismsService.sendSms(savedUser.getMobileNumber(), message);
         UserDto userDtO = UserMapper.mapToUserDto(savedUser, new UserDto());
         return  userDtO;
     }
+
+
     @Override
     public UserDto updateUser(String mobileNumber, RegisterRequestDto registerRequestDto, Long id) {
-
+        // Fetch the existing user by the provided mobile number
         Users user = userRepository.findByMobileNumber(mobileNumber).orElseThrow(
-                () -> new UsernameNotFoundException("User not found for mobile no. " + mobileNumber)
+                () -> new ResourceNotFoundException("User", "mobile number", mobileNumber)
         );
 
-
-        Optional<Users> existingUser = userRepository.findByMobileNumber(registerRequestDto.getMobileNumber());
-        if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
-            throw new ResourceAlreadyExistsException("User", "mobile number", registerRequestDto.getMobileNumber());
+        // If the mobile number in the request is different, check for conflicts with other users
+        if (registerRequestDto.getMobileNumber() != null && !registerRequestDto.getMobileNumber().equals(user.getMobileNumber())) {
+            Optional<Users> existingUser = userRepository.findByMobileNumber(registerRequestDto.getMobileNumber());
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
+                throw new ResourceAlreadyExistsException("User", "mobile number", registerRequestDto.getMobileNumber());
+            }
+            // Update the mobile number if no conflict
+            user.setMobileNumber(registerRequestDto.getMobileNumber());
         }
 
-
-        user = UserMapper.mapToUser(registerRequestDto, user);
-
-
+        // Update only the other fields that are present in the request
+        if (registerRequestDto.getName() != null) {
+            user.setName(registerRequestDto.getName());
+        }
+        if (registerRequestDto.getEmail() != null) {
+            user.setEmail(registerRequestDto.getEmail());
+        }
         if (registerRequestDto.getPassword() != null && !registerRequestDto.getPassword().isEmpty()) {
-
+            // If new password is provided, encode it
             user.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));
-        } else {
-
-            user.setPassword(user.getPassword());
         }
 
         // Save the updated user details
         Users updatedUser = userRepository.save(user);
 
-        // Map the updated user entity to a UserDto and return
+        // Return the updated UserDto
         return UserMapper.mapToUserDto(updatedUser, new UserDto());
     }
+
 
 
     @Override

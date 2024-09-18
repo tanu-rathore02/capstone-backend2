@@ -20,7 +20,7 @@ public class RegisterRequestDto {
     @NotEmpty(message = "Mobile number can not be a null or empty")
     private String mobileNumber;
 
-    @NotEmpty(message = "Password can not be a null or empty")
+
     private String password;
 
     @NotEmpty(message = "Role can not be a null or empty")

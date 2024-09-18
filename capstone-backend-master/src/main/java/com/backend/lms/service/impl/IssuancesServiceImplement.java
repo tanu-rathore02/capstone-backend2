@@ -35,15 +35,13 @@ public class IssuancesServiceImplement implements IIssuancesService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     public Page<IssuanceOutDto> getIssuancesPaginated(Pageable pageable, String search) {
         Page<Issuances> issuancePage;
-        if (search != null && !search.isEmpty()) {
-            issuancePage = issuancesRepository.findByBooks_TitleContainingIgnoreCase(search, pageable);
-        } else {
+        if (search == null || search.trim().isEmpty()) {
             issuancePage = issuancesRepository.findAll(pageable);
+        } else {
+            issuancePage = issuancesRepository.findByBooksOrUsers(search.trim(), pageable);
         }
-
         return issuancePage.map(issuance -> IssuancesMapper.mapToIssuanceOutDto(issuance, new IssuanceOutDto()));
     }
 
@@ -57,7 +55,7 @@ public class IssuancesServiceImplement implements IIssuancesService {
 
     @Override
     public Long getIssuanceCountByType() {
-        return issuancesRepository.count();
+        return issuancesRepository.countInHouse();
     }
 
     @Override
@@ -86,7 +84,7 @@ public class IssuancesServiceImplement implements IIssuancesService {
             book.setAvailability(book.getAvailability() - 1);
             booksRepository.save(book);
         } else {
-            throw new RuntimeException("Book is not available");
+            throw new ResourceNotFoundException("Issuance", "title", book.getTitle());
         }
 
         Issuances savedIssuance = issuancesRepository.save(issuance);
@@ -100,7 +98,7 @@ public class IssuancesServiceImplement implements IIssuancesService {
                 savedIssuance.getIssueDate().toLocalDate(),
                 savedIssuance.getReturnDate().toLocalDate());
 
-        ismsService.sendSms(savedIssuance.getUsers().getMobileNumber(), message);
+//        ismsService.sendSms(savedIssuance.getUsers().getMobileNumber(), message);
 
 
         return IssuancesMapper.mapToIssuanceOutDto(savedIssuance, new IssuanceOutDto());

@@ -9,11 +9,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
@@ -24,6 +26,7 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String jwt = request.getHeader(JWTConstants.JWT_HEADER);
+
 
         if (null != jwt) {
             try {
@@ -45,10 +48,31 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
                     }
                 }
             } catch (Exception e) {
-                throw new BadCredentialsException("Invalid Token received!");
+
+                String message = e.getMessage();
+
+                if (message == null || message.isEmpty()) {
+                    message = "Invalid token received!";
+                }
+
+                String jsonResponse =
+                        String.format("{\"status\": %s, \"message\": \"%s\"}",
+                                HttpStatus.BAD_REQUEST.value(),
+                                message);
+
+                response.setStatus(HttpStatus.BAD_REQUEST.value());
+                response.getWriter().write(jsonResponse);
+
+                return;
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return new AntPathMatcher().match("/api/login", path);
     }
 }

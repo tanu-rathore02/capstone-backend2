@@ -2,6 +2,7 @@ package com.backend.lms.service.impl;
 
 import com.backend.lms.dto.categories.CategoriesDto;
 import com.backend.lms.exception.EntityConstraintViolationException;
+import com.backend.lms.exception.MethodNotAllowedException;
 import com.backend.lms.exception.ResourceAlreadyExistsException;
 import com.backend.lms.exception.ResourceNotFoundException;
 import com.backend.lms.mapper.CategoriesMapper;
@@ -63,7 +64,7 @@ public class CategoriesServiceImplement implements ICategoriesService {
 
     @Override
     public CategoriesDto getCategoryByName(String categoryName){
-        Categories categories = categoriesRepository.findByCategoryName(categoryName).orElseThrow(
+        Categories categories = categoriesRepository.findByCategoryNameIgnoreCase(categoryName).orElseThrow(
                 () -> new ResourceNotFoundException("Category", "name", categoryName)
         );
         return CategoriesMapper.mapToCategoriesDto(categories, new CategoriesDto());
@@ -72,7 +73,7 @@ public class CategoriesServiceImplement implements ICategoriesService {
     // Post API
     @Override
     public CategoriesDto createCategory(CategoriesDto categoriesDto) {
-        if (categoriesRepository.findByCategoryName(categoriesDto.getCategoryName()).isPresent()) {
+        if (categoriesRepository.findByCategoryNameIgnoreCase(categoriesDto.getCategoryName()).isPresent()) {
             throw new ResourceAlreadyExistsException("Category", "categoryName", categoriesDto.getCategoryName());
         }
         Categories category = CategoriesMapper.mapToCategories(categoriesDto, new Categories());
@@ -87,7 +88,7 @@ public class CategoriesServiceImplement implements ICategoriesService {
                 () -> new ResourceNotFoundException("Category", "id", id.toString())
         );
 
-        Optional<Categories> existingCategory = categoriesRepository.findByCategoryName(categoriesDto.getCategoryName());
+        Optional<Categories> existingCategory = categoriesRepository.findByCategoryNameIgnoreCase(categoriesDto.getCategoryName());
         if (existingCategory.isPresent() && !existingCategory.get().getId().equals(id)) {
             throw new ResourceAlreadyExistsException("Category", "categoryName", categoriesDto.getCategoryName());
         }
@@ -104,6 +105,13 @@ public class CategoriesServiceImplement implements ICategoriesService {
                 () -> new ResourceNotFoundException("Category", "id", id.toString())
         );
 
+        List<Books> books = booksRepository.findByCategoriesId(category.getId());
+        for (Books book : books) {
+            if (issuancesRepository.existsByBooksIdAndStatus(book.getId(), "ISSUED")) {
+                throw new MethodNotAllowedException("Cannot delete category because one or more books are issued.");
+            }
+        }
+
         booksRepository.deleteByCategories(category);
         categoriesRepository.deleteById(id);
         return CategoriesMapper.mapToCategoriesDto(category, new CategoriesDto());
@@ -112,13 +120,13 @@ public class CategoriesServiceImplement implements ICategoriesService {
     @Override
     @Transactional
     public CategoriesDto deleteCategoryByName(String name) {
-        Categories category = categoriesRepository.findByCategoryName(name).orElseThrow(
+        Categories category = categoriesRepository.findByCategoryNameIgnoreCase(name).orElseThrow(
                 () -> new ResourceNotFoundException("Category", "name", name)
         );
 
-        List<Books> books = booksRepository.findByCategories_Id(category.getId());
+        List<Books> books = booksRepository.findByCategoriesId(category.getId());
         for (Books book : books) {
-            if (issuancesRepository.existsByBooks_IdAndStatus(book.getId(), "issued")) {
+            if (issuancesRepository.existsByBooksIdAndStatus(book.getId(), "ISSUED")) {
                 throw new EntityConstraintViolationException("Cannot delete category because one or more books are issued.");
             }
         }

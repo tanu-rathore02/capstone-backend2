@@ -1,6 +1,5 @@
 package com.backend.lms.controller;
-
-import com.backend.lms.dto.categories.CategoriesDto;
+import com.backend.lms.dto.response.ResponseDto;
 import com.backend.lms.dto.users.RegisterRequestDto;
 import com.backend.lms.dto.users.UserDto;
 import com.backend.lms.service.IUserService;
@@ -67,20 +66,26 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestBody RegisterRequestDto registerRequestDto, UserDto userDto) {
+    public ResponseEntity<ResponseDto> registerUser(@RequestBody RegisterRequestDto registerRequestDto, UserDto userDto) {
         UserDto savedUser = iUserService.registerUser(registerRequestDto, userDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+
+        ResponseDto responseDto = new ResponseDto("201", "User registered successfully");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
     @DeleteMapping("/user/deleteUser/{mobileNumber}")
-    public ResponseEntity<UserDto> deleteUser(@PathVariable String mobileNumber) {
+    public ResponseEntity<ResponseDto> deleteUser(@PathVariable String mobileNumber) {
         UserDto userDto = iUserService.deleteUserByMobile(mobileNumber);
-        return ResponseEntity.status(HttpStatus.OK).body(userDto);
+
+        ResponseDto responseDto = new ResponseDto("200", "User deleted successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    @PutMapping("/user/updateUser/{mobileNumber}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable String mobileNumber, @RequestBody RegisterRequestDto registerRequestDto, Long id) {
-        UserDto userDto = iUserService.updateUser(mobileNumber, registerRequestDto,id);
-        return ResponseEntity.status(HttpStatus.OK).body(userDto);
-    }
+    @PatchMapping("/user/updateUser/{mobileNumber}")
+    public ResponseEntity<ResponseDto> updateUser(@PathVariable String mobileNumber, @RequestBody RegisterRequestDto registerRequestDto, Long id) {
+        UserDto userDto = iUserService.updateUser(mobileNumber, registerRequestDto, id);
+        ResponseDto responseDto = new ResponseDto("200", "User details updated successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
 
+    }
 }

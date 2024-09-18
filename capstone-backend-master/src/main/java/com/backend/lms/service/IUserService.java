@@ -28,6 +28,7 @@ public interface IUserService {
 
     UserDto updateUser(String mobileNumber, RegisterRequestDto registerRequestDto, Long id);
 
+
     UserDto getUserByToken(String token);
 
 }

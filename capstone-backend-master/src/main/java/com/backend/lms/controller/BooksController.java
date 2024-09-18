@@ -3,6 +3,7 @@ package com.backend.lms.controller;
 import com.backend.lms.dto.books.BooksInDto;
 import com.backend.lms.dto.books.BooksOutDto;
 import com.backend.lms.dto.categories.CategoriesDto;
+import com.backend.lms.dto.response.ResponseDto;
 import com.backend.lms.service.IBooksService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -89,29 +90,37 @@ public class BooksController {
 
     //Post API
     @PostMapping("/createBook")
-    public ResponseEntity<BooksOutDto> createBook(@RequestBody BooksInDto booksInDto) {
+    public ResponseEntity<ResponseDto> createBook(@RequestBody BooksInDto booksInDto) {
         BooksOutDto booksOutDto = iBooksService.createBook(booksInDto);
-        return ResponseEntity.status(HttpStatus.OK).body(booksOutDto);
+
+        ResponseDto responseDto = new ResponseDto("200", "Book created successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     //Update API
     @PutMapping("/updateBook/{id}")
-    public ResponseEntity<BooksOutDto> updateBook(@PathVariable Long id, @RequestBody BooksInDto booksInDto) {
+    public ResponseEntity<ResponseDto> updateBook(@PathVariable Long id, @RequestBody BooksInDto booksInDto) {
         BooksOutDto bookOutDTO = iBooksService.updateBook(id, booksInDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookOutDTO);
+
+        ResponseDto responseDto = new ResponseDto("200", "Book updated successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     //Delete API
     @DeleteMapping("/deleteBook/{id}")
-    public ResponseEntity<BooksOutDto> deleteBookById(@PathVariable Long id) {
+    public ResponseEntity<ResponseDto> deleteBookById(@PathVariable Long id) {
         BooksOutDto booksOutDto = iBooksService.deleteBookById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(booksOutDto);
+
+        ResponseDto responseDto = new ResponseDto("200", "Book deleted successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @DeleteMapping("/deleteBook/title/{title}")
-    public ResponseEntity<BooksOutDto> deleteBookByTitle(@PathVariable String title) {
+    public ResponseEntity<ResponseDto> deleteBookByTitle(@PathVariable String title) {
         BooksOutDto booksOutDto = iBooksService.deleteBookByTitle(title);
-        return ResponseEntity.status(HttpStatus.OK).body(booksOutDto);
+
+        ResponseDto responseDto = new ResponseDto("200", "Book deleted successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
 }

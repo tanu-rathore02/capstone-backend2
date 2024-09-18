@@ -27,7 +27,7 @@ public class SMSServiceImpletation implements ISMSService {
     public void verifyNumber(String number) {
         try {
 
-            // Ensure the phone number is in E.164 format
+
             if (!number.startsWith("+")) {
                 number = "+91" + number;
             }
@@ -50,7 +50,7 @@ public class SMSServiceImpletation implements ISMSService {
         try {
             Twilio.init(twilioAccountSid, twilioAuthToken);
 
-            // Ensure the phone number is in E.164 format
+
             if (!toPhoneNumber.startsWith("+")) {
                 toPhoneNumber = "+91" + toPhoneNumber;
             }

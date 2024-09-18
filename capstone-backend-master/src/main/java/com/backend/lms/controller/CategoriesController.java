@@ -1,6 +1,7 @@
 package com.backend.lms.controller;
 
 import com.backend.lms.dto.categories.CategoriesDto;
+import com.backend.lms.dto.response.ResponseDto;
 import com.backend.lms.service.ICategoriesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -74,29 +75,37 @@ public class CategoriesController {
     }
 
     @PostMapping("/createCategory")
-    public ResponseEntity<CategoriesDto> createCategory(@RequestBody CategoriesDto categoryDTO) {
+    public ResponseEntity<ResponseDto> createCategory(@RequestBody CategoriesDto categoryDTO) {
         CategoriesDto savedCategoryDTO = iCategoriesService.createCategory(categoryDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCategoryDTO);
+
+        ResponseDto responseDto = new ResponseDto("200", "Category created successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @PutMapping("/updateCategory/{id}")
-    public ResponseEntity<CategoriesDto> updateCategory(@PathVariable Long id, @RequestBody CategoriesDto categoryDTO) {
+    public ResponseEntity<ResponseDto> updateCategory(@PathVariable Long id, @RequestBody CategoriesDto categoryDTO) {
         CategoriesDto updatedCategoryDTO = iCategoriesService.updateCategory(id, categoryDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedCategoryDTO);
+
+        ResponseDto responseDto = new ResponseDto("200", "Category updated successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
 
     @DeleteMapping("/deleteCategory/{id}")
-    public ResponseEntity<CategoriesDto> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<ResponseDto> deleteCategory(@PathVariable Long id) {
 
         CategoriesDto categoryDTO = iCategoriesService.deleteCategoryById(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(categoryDTO);
+        ResponseDto responseDto = new ResponseDto("200", "Category deleted successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @DeleteMapping("/deleteCategory/name/{name}")
-    public ResponseEntity<CategoriesDto> deleteCategoryByName(@PathVariable String name) {
+    public ResponseEntity<ResponseDto> deleteCategoryByName(@PathVariable String name) {
         CategoriesDto categoryDTO = iCategoriesService.deleteCategoryByName(name);
-        return ResponseEntity.status(HttpStatus.OK).body(categoryDTO);
+
+        ResponseDto responseDto = new ResponseDto("200", "Category deleted successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }

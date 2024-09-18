@@ -4,6 +4,7 @@ package com.backend.lms.service.impl;
 import com.backend.lms.dto.books.BooksInDto;
 import com.backend.lms.dto.books.BooksOutDto;
 import com.backend.lms.exception.EntityConstraintViolationException;
+import com.backend.lms.exception.MethodNotAllowedException;
 import com.backend.lms.exception.ResourceAlreadyExistsException;
 import com.backend.lms.exception.ResourceNotFoundException;
 import com.backend.lms.mapper.BooksMapper;
@@ -13,10 +14,8 @@ import com.backend.lms.repository.BooksRepository;
 import com.backend.lms.repository.CategoriesRepository;
 import com.backend.lms.repository.IssuancesRepository;
 import com.backend.lms.service.IBooksService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -90,7 +89,7 @@ public class BooksServiceImplement implements IBooksService {
     @Override
     public BooksOutDto getBookByTitle(String title) {
 
-        Books book = booksRepository.findByTitle(title).orElseThrow(
+        Books book = booksRepository.findByTitleIgnoreCase(title).orElseThrow(
                 () -> new ResourceNotFoundException("Book", "title", title)
         );
 
@@ -114,7 +113,7 @@ public class BooksServiceImplement implements IBooksService {
     @Override
     public BooksOutDto createBook(BooksInDto booksInDto) {
 
-        if (booksRepository.findByTitle(booksInDto.getTitle()).isPresent()) {
+        if (booksRepository.findByTitleIgnoreCase(booksInDto.getTitle()).isPresent()) {
             throw new ResourceAlreadyExistsException("Book", "title", booksInDto.getTitle());
         }
 
@@ -134,7 +133,7 @@ public class BooksServiceImplement implements IBooksService {
                 () -> new ResourceNotFoundException("Book", "id", id.toString())
         );
 
-        Optional<Books> existingBook = booksRepository.findByTitle(booksInDto.getTitle());
+        Optional<Books> existingBook = booksRepository.findByTitleIgnoreCase(booksInDto.getTitle());
         if (existingBook.isPresent() && !existingBook.get().getId().equals(id)) {
             throw new ResourceAlreadyExistsException("Book", "title", booksInDto.getTitle());
         }
@@ -158,6 +157,13 @@ public class BooksServiceImplement implements IBooksService {
                 () -> new ResourceNotFoundException("Book", "id", id.toString())
         );
 
+
+        boolean isBookIssued = issuancesRepository.existsByBooksIdAndStatus(book.getId(), "ISSUED");
+        if (isBookIssued) {
+
+            throw new MethodNotAllowedException("Cannot delete book because this book is issued to someone.");
+        }
+
         booksRepository.deleteById((book.getId()));
 
         BooksOutDto booksOutDto = BooksMapper.mapToBookOutDTO(book, new BooksOutDto());
@@ -168,12 +174,12 @@ public class BooksServiceImplement implements IBooksService {
     @Transactional
     public BooksOutDto deleteBookByTitle(String title) {
         // Fetch the book by title
-        Books book = booksRepository.findByTitle(title).orElseThrow(
+        Books book = booksRepository.findByTitleIgnoreCase(title).orElseThrow(
                 () -> new ResourceNotFoundException("Book", "title", title)
         );
 
 
-        boolean isBookIssued = issuancesRepository.existsByBooks_IdAndStatus(book.getId(), "issued");
+        boolean isBookIssued = issuancesRepository.existsByBooksIdAndStatus(book.getId(), "ISSUED");
         if (isBookIssued) {
 
             throw new EntityConstraintViolationException("Cannot delete book as it is currently issued.");

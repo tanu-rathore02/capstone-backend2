@@ -51,7 +51,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests((requests) -> requests
 //                Auth routes
-                        .requestMatchers("/api/login", "/api/error").permitAll()
+                        .requestMatchers("/api/login", "/api/error", "/error").permitAll()
                         .requestMatchers("/api/register").hasRole("ADMIN")
                         .requestMatchers("/api/current-user").authenticated()
 
@@ -82,7 +82,8 @@ public class SecurityConfig {
                         .requestMatchers("api/issuances/updateStatus/{id}", "api/issuances/deleteIssuance/{id}").hasRole("ADMIN")
                         .requestMatchers( HttpMethod.GET, "/api/issuances/**").hasAnyRole("ADMIN", "USER")
 
-
+//                Dashboard routes
+                        .requestMatchers("/api/dashboard/countAll").hasRole("ADMIN")
 
         );
 

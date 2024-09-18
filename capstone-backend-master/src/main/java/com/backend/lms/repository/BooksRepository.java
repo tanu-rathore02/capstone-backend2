@@ -17,13 +17,13 @@ public interface BooksRepository extends JpaRepository<Books, Long> {
 
     List<Books> findAllByCategories(Categories categories);
 
-    Optional<Books> findByTitle(String title);
+    Optional<Books> findByTitleIgnoreCase(String title);
 
     List<Books> findAllByAuthor(String author);
 
     void deleteByCategories(Categories category);
 
-    List<Books> findByCategories_Id(Long categoryId);
+    List<Books> findByCategoriesId(Long categoryId);
 
     void deleteByCategories_Id(Long categoryId);
 
